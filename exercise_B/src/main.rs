@@ -7,9 +7,15 @@ fn main() {
 
     let area = area_of(width, height);
     println!("Area is {}", area);
+
+    let volume = volume(width, height, depth);
+    println!("Volume is {}", volume);
 }
 
 fn area_of(x: i32, y: i32) -> i32 {
     x * y
 }
 
+fn volume(x: i32, y: i32, z: i32) -> i32 {
+    x * y * z
+}   
