@@ -124,3 +124,28 @@
 
 ## 4. Exercise A
 * the exercise for this section is available [here](https://github.com/CleanCut/ultimate_rust_crash_course/tree/main/exercise/a_variables)
+
+## 5. Functions
+### Functions
+* so far we have seen the `main` functions which is the entry point for any executable
+* functions in general are defined by the `fn` keyword and should written in snake-case (i.e. lower letters with underscores)
+* functions don't have to be defined before they are called (it's not a scripting language)
+
+### Parameters
+* function parameters are always defined with `name: type`
+    * there so no default in the function signature (like Python allows)
+* a return type must also be defined, if a function returns a  value
+* Rust does not support name arguments, when calling the function 
+
+### Return Values
+* the `return` keyword can be used to return a value explicitly
+* or omitting the semi-colon `;` will return a value implicitly (called a tail-expression)
+
+### Macros
+* macros are magic functions that you recognize by the `!` at the end of function
+* they are a special type of function that often generate code as needed under the hood
+
+## 6. Exercise B
+
+## 7. Module System
+
