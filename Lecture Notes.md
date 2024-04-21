@@ -148,4 +148,142 @@
 ## 6. Exercise B
 
 ## 7. Module System
+### Modular Structure
+* Rust can compile to executables or libraries
+    ```bash
+    ./hello
+    ├── Cargo.toml
+    └── src
+        ├── lib.rs  // the hello library
+        └── main.rs // the hello binary
+    ```
+* you can also use this to build modules for your applications
+    ```rust
+    # src/lib.rs
+    pub fn greet() {
+        println!("Hi!");
+    }
+    ...
+    # src/main.rs
+    use hello::greet; // item import
 
+    fn main() {
+        hello::greet(); // absolute path
+        greet();        // relative path avail through import
+    }
+    ```
+
+### Importing
+* by default, all functions are private in Rust (even in the same project)
+* the `pub` keyword can make functions available outside of their original file
+* then you can use it either through the absolute path or relative path (see above)
+* we can import functions from standard libraries or our own modules with `use` keyword
+* the standard library is called with `use std::`
+
+### Crates.io
+* crates.io is Rust official package registry
+* once you found a necessary packages, you can add in the dependencies section of the `Cargo.toml`
+    ```toml
+    [dependencies]
+    rand = "0.6.5"
+    ```
+* this also allows you to import/`use` this package inside your code 
+
+# 3. Primitive Types and Flow Contol
+
+## 1. Scalar Types
+### The 4 Scalar Types
+1. Integers
+2. Floats
+3. Booleans
+4. Characters
+
+### Integers
+* unsinged integers are always positive
+* singed integers can be positive and negative
+* `usize` represents the machine's pointer type and represent every memory address
+* `isize`'s maximum value is the upper bound of object and array size
+* un-typed integers default to `i32`
+
+| Length  | Signed | Unsigned |
+|---------|--------|----------|
+| 8-bit   | i8     | u8       |
+| 16-bit  | i16    | u16      |
+| 32-bit  | i32    | u32      |
+| 64-bit  | i64    | u64      |
+| 128-bit | i128   | u128     |
+| arch    | isize  | usize    |
+
+### Number Literals
+* numbers of different numerical systems are represented as shown in the next table
+* `u8` stands for byte in Rust
+* underscores are ingored by the compiler and help with readibility 
+
+| Number literals | Example     | Starts with
+|-----------------|-------------|------|
+| Decimal         | 98_222      |      |
+| Hex             | 0xff        | `0x` |
+| Octal           | 0o77        | `0o` |
+| Binary          | 0b1111_0000 | `0b` |
+| Byte (u8 only)  | b'A'        | `b`  |
+
+### Floats
+* there are `f32` and `f64`
+* `f64` is the default but can be slow on small machines
+* they follow the IEEE-754 standard
+
+### Suffixing
+* you can suffix numbers with a type to turn them into literals
+    ```rust
+    let x = 5u16;
+    let y = 3.14f32;
+    ```
+
+### Boolean
+* the type is specified with `bool` and its two cases are `true` & `false`
+* they are not integers and don't support arithmetic (unless you cast them)
+
+### Character
+* `char` can be anything from
+    * a character of our alphabet
+    * to a character of someone else's alphabet
+    * to an ideograph
+    * or a diacritic or an emoji
+    * or a non-printable Unicode control character
+* they are always 4 bytes (32 bits)
+* USC-4 or UTF-32 string
+
+## 2. Compound Types
+### Collections
+* compound or collection types carry multiple values of other types into one
+
+### Tuples
+* can hold multiple of any type
+* there are 2 ways of accessing its members
+    * 1: dot syntax with zero-indexed
+    * 2: de-structuring
+    ```rust
+    let info: (u8, f64, i32) = (1, 3.3, 999)
+    let jets = info.0; // dot syntax
+    let (jets, fuel, ammo) = info; // de-structure
+    ```
+* Rust tuples have an arity of 12 (i.e. how many values are collected)
+
+### Arrays
+* arrays store mulitple of the same type
+* can be specified literally with square brackets `[]` and commas or with how many values you want
+* accessing is done by index in square brackets
+* have an arity of 32 because arrays live on the stack (fast memory) be default are of fixed size
+    ```rust
+    let buf: [u8; 3] = [1, 2, 3];
+    let first = buf[0];
+    ```
+
+### Vectors
+* vectors are of flexible size and therefore live on the heap (dynamic, but slower memory)
+* they are usually the prefered way of handling your list-like data collection
+
+## 3. Exercise C
+## 4. Control Flow
+## 5. Strings
+## 6. Exercise D
