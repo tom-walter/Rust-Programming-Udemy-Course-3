@@ -284,6 +284,95 @@
 * they are usually the prefered way of handling your list-like data collection
 
 ## 3. Exercise C
+
 ## 4. Control Flow
+### If-Else Expressions
+* everything between the `if` and `{` is the condition
+* Rust does not like type conversion, so the condition must evaluate to a boolean
+* chaining is done by `else if`
+
+### Expression not a Statement
+* statements don't return values but expresions do!
+* `if` is an expression, because `if-else` can return a value
+    ```rust
+    let msg = if num == 5 {
+        "five"
+    } else if num == 4 {
+        "four"
+    } else {
+        "other"
+    };
+    ```
+* this implicit return works via tail-expression
+* Rust also does not support ternary operations
+
+### Uncoditional Loop
+* Rust can do unconditional loops, which allow for optimization at compile time
+* but they are not truly infinite, they end with a break
+    ```rust
+    loop {
+        break;
+    }
+    ```
+* also nested, unconditional loops are supported
+* label each loop and use the label to break oute
+    * such labels must start with a single apostrophe
+    ```rust
+    'bob: loop {
+        loop {
+            loop {
+                break 'bob;
+            }
+        }
+    }
+    ```
+
+### While Loop
+* have the same behavior as unconditional loops, but they break when their condition evaluates to false
+* again Rust refuses types coercion to booleans
+
+### For Loop
+* the for loop iterates over any iterable value, compound types or collection types
+* usually, these types have the `.iter()` method
+* for functional programming, methods like `.map()` can be chained onto `.iter()`, which is in Rust code
+
+### Ranges
+* you can also iterate over ranges, denoted by two dots `..`
+* the start is inclusive and the end is exclusive
+* you can make the end inclusive with `..=`
+    * but this is not recommended because the LLVM compiler cannot optimize this (recommend for optimization is +1) 
+
 ## 5. Strings
+### Strings are Complicated
+* there are at least 6 types of strings in the Rust standard library
+* but we mostly care for 2 types: `String` and `str` (called string slice)
+
+### str
+* `str` is most often encountered as borrowed `&str`
+* a literal string is always a string slice
+    ```rust
+    let msg = "hello 🌎"; // is string slice
+    ```
+* `&str` are immutable
+
+### String
+* `String` can be modified 
+* you can create a `String` from a `str` by called `.to_string()` method on a borrowed slice
+* or by passing to `String::from()`
+    ```rust
+    let msg = String::new("hello 🌎"); // is String
+    ```
+
+### String vs str
+* a borrowed string slice `&str` is made of pointer to some bytes and a length
+* a string `String` is made of a pointer to some bytes, a lenght, and a capacity
+* thus, a borrowed string slice `&str` is subset of a string `String` in more than one sense
+* both are valid UTF-8 types by definition (i.e. by compiler enforcement and run-time checks)
+* they cannot be indexed by character position because of unicode characters
+    * they differentiate between graphenes and diacritics
+    * they can combine into character and thus have different lengths
+* a stings supports the method `.bytes()` which can be indexed
+* a stings supports the method `.chars()` which can be used to iterate through unicode scalars
+* or use library like `unicode-segmentation`
+
 ## 6. Exercise D
