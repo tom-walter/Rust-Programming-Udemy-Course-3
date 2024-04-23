@@ -376,3 +376,173 @@
 * or use library like `unicode-segmentation`
 
 ## 6. Exercise D
+
+# 4. The Heart of Rust
+## 1. Ownership
+### What is Ownership?
+* ownership is a feature that makes Rust different from other systems language
+* ownership makes memory-safety and informative compiler messages possible
+
+### Three Golden Rules
+__1. Each Values has an Owner__
+* there is no value/data in memory that doesn't have a variable that owns it
+
+__2. Only one Owner__
+* no variables may share ownership
+* other variables may borrow (or move the ownership)
+
+__3. Dropped Values go out of Scope__
+* when the owner goes out of scope, the values gets dropped from memory immediatly
+
+### Computer Memory
+* during runtime, programs have access to 2 kinds of memory: the stack & the heap
+
+    | Feature    | STACK      | HEAP                      |
+    |-----------:|------------|---------------------------|
+    | Allocation | In Order   | Unordered                 |
+    | Size       | Fixed Size | Variable / Dynamical Size |
+    | Ordering   | LIFO       | Unordered                 |
+    | Speed      | Fast       | Slow                      |
+
+* LIFO = last in, first out
+
+### Ownership in Action
+_MOVE_
+* moving ownership from one to another variables
+    ```rust
+    let s1 = String::from("abc");
+    let s2 = s1;
+    println!("{}", s1); // error[E0382]
+    ```
+    * compiler error "borrow after moved value"
+* a `String` exists as a pointer on the stack and as data on the heap
+* moving it creates a new stack pointer but no heap data
+* to have memory-safety, the first pointer on the stack is deleted so that no 2 owners of the heap data exist
+
+
+_CLONE_
+* cloning a value
+    ```rust
+    let s1 = String::from("abc");
+    let s2 = s1.clone();
+    println!("{}", s1);
+    ```
+* this clones the pointer on the stack as well as the data on the stack
+* therefore, 2 pointers with identical but separate data can exist without creating memory-unsafety
+* in other languages, this is a _deep copy_
+
+_COPY_
+* Rust reserves copy for when only stack variable (without heap data) is duplicated
+
+_DROP_
+* a value is dropped when a variable goes out of scope
+* at this point three things happen
+    * 1: a destructor deletes the variable
+    * 2: the heap memory is freed
+    * 3: the stack pointer is popped
+* thus, there will be neither leaks nor  dangling pointers
+
+_SCOPE_
+* obviously, functions have their own scope
+* meaning: if variable is moved into a function, it is dropped after the scope of the function
+    ```rust
+    fn do_stuff(s: String) {
+        // does stuff
+    }
+
+    let s1 = String::from("abc");
+    do_stuff(s1);
+    println!("{}", s1); // error
+    ```
+* if you don't want the function to consume the variable, we can use referencing
+
+## 2. References & Borrowing
+### References on Function Parameters
+* the ampersand `&` before a type in the function's signature indicates a refernce to a type
+* when we call such a function, we must pass the variable as reference (and the variable retains ownership of the value)
+* only the reference gets moved into function and afterwards only the reference goes out of scope
+    ```rust
+    fn do_stuff(s: &String) {
+        // does stuff
+    }
+
+    let s1 = String::from("abc"):
+    do_stuff(&s1);
+
+    println!("{}", s1); // no error
+    ```
+* references are pointers to the pointers in the stack
+
+### Lifetimes
+* references must always be kept valid through lifetimes
+* the compiler will not let you create a reference that outlives the data (that it is referencing)
+* you can never point to null
+* references are by default immutable (even if the data is mutable)
+* we must create a mutable reference to mutable data in order to change the data
+    ```rust
+    fn do_stuff(s: &mut String) {
+        // auto deref
+        s.insert_str(0, "Hi ");
+        // manual deref
+        (*s).insert_str(0, "Hi ");
+    }
+
+    let mut s1 = String::from("abc"):
+    do_stuff(&s1);
+    ```
+* dot-methods automatically dereference
+* we can also dereference with an asteriks before the reference `*`
+
+### Summary
+* variables and references
+    ```
+    x       ← variable/owner
+    &x      ← reference to x
+    &mut x  ← mutable reference to x
+    ```
+* types and references
+    ```
+    i32      ← a type
+    &i32     ← reference to a type
+    &mut i32 ← mutable reference to a type
+    ```
+* dereferencing
+    ```
+    # if you have 
+    x: &mut i32
+    # deref with
+    *x // a mutable i32
+    ...
+    # if you have 
+    x: &i32
+    # deref with
+    *x // an immutable i32
+    ```
+
+### Reference Counting
+* Rust has the following rule
+* you can have
+    * either exactly _one mutable reference_
+    * or _any number of immutable reference
+* this makes referencing thread-safe by default
+* but Rust additionally provides reference counters `Rc` and `Arc` to handle them better across threads
+
+### Compiler as ...
+_Rule-Enforcer_
+* all memory-safety rules are enforced at compile-time, which may lead to many errors
+* but then, there will be no runtime errors, like segfault
+
+_Helper_
+* compiler error are very informative and mostly tell you how to fix them
+* if there is only one obvious solution, you can use `cargo fix` to fix it
+
+
+## 3. Exercise E
+
+# 5. The Meat of Rust
+## 1. Structs
+## 2. Traits
+## 3. Exercise F
+## 4. Collections
+## 5. Enums
+## 6. Exercise G
