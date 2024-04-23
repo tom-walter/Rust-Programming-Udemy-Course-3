@@ -700,5 +700,189 @@ _Helper_
 
 ## 3. Exercise F
 ## 4. Collections
+* `std::collections` is a standard library with the common data structures known from other languages
+
+### Vector
+* a vector `Vec<T>` is a generic collection that holds a bunch of one type
+* similar to a list or array in other languages
+* it's the most commonly used collection
+* when you create a empty vector, it must be typed, afterwards you can push values of that type onto the vector
+    ```rust
+    let mut v: Vec<i32> = Vec::new();
+    v.push(2);
+    v.push(4);
+    v.push(6);
+    ...
+    let last = v.pop(); // last is 6
+    ```
+* vectors act like stack
+    * `.push()` appends things to the end
+    * `.pop()` removes and returns the last item
+* vectors objects of known size next to each other on memory, so you can index into it
+    * if an index is out of bound, Rust will panic 
+* vectors can be created with a macro
+    ```rust
+    let mut v = vec![2, 4, 6];
+    ```
+* vectors provided low-level control with methods like: `.iter()`, `.insert()`, `.split()`, `.remove()`, `splice()`, `.sort()`
+
+### HashMap
+* a hashmap is generic collection, where you store key-value pairs
+* you need to specify type for the key and one for the value
+* in some languages, this is called a dictionary
+* their purpose is to be able to insert, look up, and remove values by key in constant time $O(1)$
+    ```rust
+    // create
+    let mut h: HashMap<u8, bool> = HashMap::new();
+    // insert
+    h.insert(5, true);
+    h.insert(6, false);
+    // remove + return
+    let have_five = h.remove(&5).unwrap();
+    ```
+
+### More Collections
+* `VecDeque`:
+    * uses a ring buffer to implement a double-ended queue
+    * it can efficiently remove items from front and back
+* `LinkedList`
+    * each element points to the previous element in the list
+    * is quick at adding or removing items at an arbitrary point in th list (but slow at anthing else)
+* `HashSet`
+    * is an implementation of a mathematical set that implements set-operation efficiently
+* `BinaryHeap`
+    * is like a priorty queue which always pops off the max value 
+* `BTreeMap` & `BTreeSet`
+    * are alternative map and set implemenations using a modified binary tree
+    * use them if you need the map-keys or set-values to always be sorted
+
 ## 5. Enums
+### Algebraic Data Types
+* Rust `enum`s are more like algebraic data types in Haskell than C-like enums
+* you can specify them with the `enum` keyword, the name in capital camel-case, and the variants in a block `{}`
+    ```rust
+    enum Color {
+        Red,
+        Green,
+        Blue,
+    }
+    ```
+
+### Powerful Enums
+* real power of Rust `enum`s comes form associating data and methods with variants
+* a variant can have no data, a single type of data, a tuple of data, or an anonymous struct of data
+* even better, you can implement functions and methods for an enum
+    ```rust
+    enum DispenserItem {
+        Empty,
+        Ammo(u8),
+        Things(String, i32),
+        Place {x: i32, y: i32},
+    }
+
+    impl DispenserItem {
+        fn display(&self) { }
+    }
+    ```
+* you can also use options with an enum
+    ```rust
+    enum Option<T> {
+        Some(T),
+        None,
+    }
+    ```
+
+### Working with Enums
+* because enums can represent all sorts of data, you need to use patterms to examine them
+
+_Single Variant_
+* `if let` takes a patterm amd will match one variant of the enum
+* if the pattern does match, then the condition is true and the variables inside the pattern are created for the scope of `if let` block
+    ```rust
+    if let Some(x) = my_variable {
+        println!("value is {}", x);
+    }
+    ```
+
+_All Variants at Once_
+* if we want to check all variants, we can use Rust's powerful `match` expression
+    ```rust
+    match my_variable {
+        Some(x) => { println!("value is {}", x); },
+        None => { println!("no value"); },
+    }
+    ```
+* match arms require a branch for every possible outcome, i.e. _they must be exhaustive_
+* all branch arms must return the same type
+* exhaustive matching is enforced by the compiler and makes your code better
+
+### Option
+* options are very common in Rust
+* option is used whenever something can be absent
+    ```rust
+    // definition
+    enum Option<T> {
+        Some(T),
+        None,
+    }
+    ```
+* create an optional integer like
+    ```rust
+    // with typing
+    let mut x: Option<i32> = None;
+    // with type-inference
+    let mut x = None;
+    x = Some(5);
+    x.is_some(); // true
+    x.is_none(); // false
+    ```
+
+### Result
+_Definition_
+* the result type is Rusts way of making error handling easier and more explicit
+    ```rust
+    // definition
+    #[must_use]
+    enum Result<T, E> {
+        Ok(T),
+        Err(E),
+    }
+    ```
+* the `Ok(T)` type and `Err(E)` type are independent of one another
+* `#[must_use]` means that you have to handle possible error and make a conscious choice on what to do
+
+_Usage_
+* importing/reading a file will return a result-type rather than the contents directly
+* this is because reading a file may fail
+* without error handling
+    ```rust
+    use std::fs::File;
+
+    fn main () {
+        File::open("foo.txt"); // compiler warning: Result must be used
+    }
+    ```
+* with error handling
+    ```rust
+    use std::fs::File;
+
+    fn main () {
+        let res = File::open("foo.txt");
+        // unwraps with Ok result
+        // an error still crashes
+        let file = res.unwrap();
+        // expect method
+        let file = res.expect("error message");
+        // never crash
+        if res.is_ok() {
+            let file = res.unwrap();
+        }
+        // full pattern matching
+        let file = match res {
+            Ok(f) => { /* do stuff*/ },
+            Err(e) => { /* do stuff*/ },
+        }
+    }
+    ```
+
 ## 6. Exercise G
