@@ -541,7 +541,163 @@ _Helper_
 
 # 5. The Meat of Rust
 ## 1. Structs
+### Struct (better than Classes)
+* `struct`s can have
+    * data fields
+    * methods
+    * associated functions
+* they are created with the `struct` keyword
+    ```rust
+    struct RedFox {
+        enemy: bool,
+        life: u8,
+    }
+    ```
+* they are instantiated like
+    ```rust
+    let fox = RedFox {
+        enemy: true,
+        life: 70,
+    };
+    ```
+
+### Implementation Block
+* but you can create associated functions, like a constructor 
+    ```rust
+    impl RedFox {
+        fn new() -> Self {
+            Self {
+                enemy: true,
+                life: 70,
+            }
+        }
+    };
+    ```
+* this is the implemenation block started by `impl`
+* it creates associated function and methods for the `struct`
+* an associated function does not have a form of `self` as its 1st parameter
+* now, we can instantiate like this
+    ```rust
+    let fox = RedFox::new();
+    ```
+* the double colon `::` is the scope operator and it's used to acces s part of namespace-like things
+
+### Methods & Associated Functions
+* methods and associated functions are both created inside the implementation block
+    ```rust
+    impl RedFox {
+        // associated functions
+        fn new()
+        fn function()
+        // methods
+        fn move(self)
+        fn borrow(&self)
+        fn mut_borrow(&mut self)
+    }
+    ```
+* methods always take some form of `self` as its 1st parameter 
+
+### Does Rust have inheritance?
+* question if Rust is OOP, does not matter to the Rust community
+* classes and inheritance bring abstraction costs that Rust wants to avoid 
+* so, no classes, no inheritance, right?
+* inheritance problems are solved by traits `trait`
+
 ## 2. Traits
+### Traits are like Interfaces
+* Rust takes the composition over inheritance
+* they are created with `trait` keyword
+* traits define required behavior
+* this behavior (aka functions) must be implemented for the struct, if the struct should have this trait
+    ```rust
+    struct RedFox {
+        enemy: bool,
+        life: u8,
+    }
+
+    trait Noisy {
+        fn get_noise(&self) -> &str;
+    }
+
+    impl Noisy for RedFox {
+        fn get_noise(&self) -> &str { "meow?" }
+    }
+    ```
+
+### Why not implement without trait?
+* once we have a trait shared across multiple different struct, wen can start writing generic functions that accept any value, which has this trait
+    ```rust
+    fn print_noise<T: Noisy>(item: T) {
+        println!("{}", item.get_noise());
+    } 
+    ```
+* this function takes any item of type `T` (generic) which implements the noisy `trait`
+* in Rust, you can implement a trait for any struct, making structs (even ones that you didn't create) extremly flexible
+    * e.g.
+    ```rust
+    impl Noisy for u8 {
+        fn get_noise(&self) -> &str { "Byte!" }
+    }
+
+    fn main() {
+        print_noise(5_u8); // prins "Byte!"
+    }
+    ```
+
+### Game Example
+* assume we have a game with a goose, a pegasus, and a horse
+    * they share attributes as shown in the table
+
+    | trait   | Goose | Pegasus | Horse |
+    |--------:|:-----:|:-------:|:-----:|
+    | fly     | ☑️   | ☑️     | ❎    |
+    | ride    | ❎   | ☑️     | ☑️    |
+    | explode | ☑️   | ❎     | ☑️    |
+
+* if we implement traits rather than object inheritance, we can keep the attributes well separated
+
+### Trait Inheritance
+* traits themselves can inherit from another trait, e.g. 
+    ```bash
+    Movement
+    └── Run
+        ├── Ride
+        └── Fly
+
+    Damage
+    └── Explode
+    ```
+* now Horse would need to implement the following traits
+    ```bash
+    Horse
+    ├── Movement
+    │   └── Run
+    │       └── Ride
+    └── Damage
+        └── Explode
+    ```
+* all trait inheritance means is that for every trait you have to implement the parent 
+
+### Trait Default Behavior
+* if you want to implement default trait behavior, you can do so inside your trait definition
+* when you implement the trait on a struct, you don't need to provide a new definition, just use an empty blocl
+    ```rust
+    trait Run {
+        fn run(&self) {
+            println!("I'm running!");
+        }
+    }
+
+    struct Robot
+    // no overriding of default behavior
+    impl Run for Robot {}
+
+    fn main() {
+        let robot = Robot {};
+        robot.run();
+    }
+    ```
+
 ## 3. Exercise F
 ## 4. Collections
 ## 5. Enums
