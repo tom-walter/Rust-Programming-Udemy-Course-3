@@ -18,7 +18,7 @@ impl Shot {
 }
 
 fn main() {
-    let arrow_coords: Vec<Coord> = get_arrow_coords(5);
+    let arrow_coords: Vec<Coord> = get_arrow_coords(6);
     let mut shots: Vec<Shot> = Vec::new();
 
     for coord in arrow_coords {
@@ -38,7 +38,7 @@ fn main() {
     //     total += shot.points();
     // }
 
-    let total = shots.iter().map(|s| s.points()).fold(0, |sum, points| sum + points);
+    let total: i32 = shots.iter().map(|s| s.points()).sum();
 
     println!("Final point total is: {}", total);
 }
