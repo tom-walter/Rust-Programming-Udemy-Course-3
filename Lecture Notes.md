@@ -969,3 +969,42 @@ _Usage_
 * tasks that require disk I/O or network I/O should implemented with asynchronous function rather than threading
 
 ## 3. Exercise H
+### Commnunicating between Threads
+* Rust allows you to transfer data between threads
+* of course, this transfer needs to follow Rust strict safety rules
+* we'll use the external crate `crossbeam` rather than the standard library
+    * crossbeam has more features and higher performance
+* to communicate between threads, we need a channel
+* creating a channel always creates an sending side and receiving side
+    * senders are called by convention `tx`
+    * receivers are called by convention `rx`
+* cloning a sender `tx` means multiple threads can send to one receiver `rx`
+    * e.g. when you want child threads to update the main thread
+    * closing all the sender sides will close the receiver side
+    ```rust
+    let (tx, rx) = channel::unbounded();
+    let tx2 = tx.clone();
+
+    let handle_a = thread::spawn(move || {
+        pause_ms(0);
+        tx2.send("Thread A: 1").unwrap();
+        pause_ms(200);
+        tx2.send("Thread A: 2").unwrap();
+    });
+
+    pause_ms(100);
+
+    let handle_b = thread::spawn(move || {
+        pause_ms(0);
+        tx.send("Thread B: 1").unwrap();
+        pause_ms(200);
+        tx.send("Thread B: 2").unwrap();
+    });
+
+    for msg in rx {
+        println!("Main thread: Received {}", msg);
+    }
+
+    handle_a.join().unwrap();
+    handle_b.join().unwrap();
+    ```
