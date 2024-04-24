@@ -1008,3 +1008,38 @@ _Usage_
     handle_a.join().unwrap();
     handle_b.join().unwrap();
     ```
+
+# 7. Project: Space Invaders
+## 1. Setup Audio
+* add the following dependency for audio support
+    ```toml
+    [dependencies]
+    rusty_audio = "1.1.4"
+    ```
+* download the archiv with audio files and unpack them to the project's root folder
+* manually add each audio file to the game with
+    ```rust
+    let mut audio = Audio::new();
+    audio.add(...);
+    ```
+
+## 2. Rendering & Mutli-Threading
+### Alternate Screen
+* add the following dependency for audio support
+    ```toml
+    [dependencies]
+    crossterm = "0.17.5"
+    ```
+* together with standard library for I/O, we can render a game in the terminal
+* use the `terminal` from the `crossterm` crate and the standard I/O to act on it
+* to get into the game `EnterAlternateScreen` and `Hide` the mouse cursor
+* upon exiting, `LeaveAlternateScreen` and `Show` the cursor again
+
+### Main Game Loop
+* the `crossterm` library can also handle keyboard inputs as events
+* for now, the gameplay loop should just check, if we exit the game via `Esq`-key or `q`-key
+
+## 3. The Player
+## 4. Shooting
+## 5. Invaders
+## 6. Winning and Losing
