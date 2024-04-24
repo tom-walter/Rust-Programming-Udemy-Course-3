@@ -886,3 +886,86 @@ _Usage_
     ```
 
 ## 6. Exercise G
+# 6. Closures & Threads
+## 1. Closures
+### What are Closures?
+* you'll encounter closures when you work with
+    * threads
+    * functional programming
+    * iterators
+    * standard libraries
+* a closure is an anonymous function that can borrow or capture data from the scope it is nested in
+    * in other languages, this is called a lambda function
+* the syntax is a parameter list within two pipes without type annotation followed by a block
+    ```rust
+    |a, b| {a + b}
+    ```
+* the types and return values are all infered from arguments
+* you can assigned closures to a variable
+    ```rust
+    let add = |a, b| {a + b};
+    let c = add(1, 2); // c=3 
+    ```
+
+### CLosures and Scopes 
+* a closure will borrow a reference to values in the enclosing scope
+    ```rust
+    let s = ":)".to_string(); 
+    let f = || {println!("{}", s)};
+    let f();
+    ```
+* you don't need to specify arguments that you borrow from the enclosing scope
+* but this can lead to trouble, if the closure out lives the arguments it calls
+* closures support the `move` semantic so we can force the closure to move the used variable (and take ownership of it)
+* now, the variable will go out of scope when the closures is dropped
+
+### Functional Programming
+* funtional programming makes use of higher functions
+* higher order functions take other functions as arguments
+* this is were closures come in handy
+* Rust supports method chaining
+    ```
+    let mut c = vec![2, 4, 6];
+
+    v.iter()
+        .map(|x| x * 3)
+        .filter(|x| *x > 10)
+        .fold(0, |acc, x|, acc + x);
+    ```
+
+## 2. Threads
+### Threads  in Rust
+* Rust threading is portable and compiles across different systems: MacOS, Windows, Linux, etc.
+    ```rust
+    use std::thread;
+
+    fn main() {
+        let handle = thread::spawn{move ||
+            // do stuff in child thread
+        };
+
+        // do stuff simultaneously in main thread
+
+        // wait until all threads exited
+        handle.join().unwrap();
+    }
+    ```
+* 1st: we pull the standard library for threading into scope
+* 2nd: we spawn a thread with an emtpy, movable closure
+    * this closure is executed as the main function of the thread
+    * being empty allows us to do anything 
+* 3rd: we spawn child threads that do the actual tasks
+* 4th: we join all threads into the main one
+    * this pauses the main thread until all child threads are done executing
+    * the join will return a Result type
+
+### Threading and Resource
+* threading is heavy-weighted
+* creating a thread allocated an operating-system-dependent amount of RAM for the threads own stack (a couple of megabytes)
+* whenever a CPU switches from running one thread to another, it has to do an expensive context switch
+* more threads = more CPU overhead
+* but threads are fantastic when you need to run tasks concurrently 
+* they allow you to use multiple cores simultaneously 
+* tasks that require disk I/O or network I/O should implemented with asynchronous function rather than threading
+
+## 3. Exercise H

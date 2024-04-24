@@ -11,5 +11,5 @@ The course has the following sections:
 3. Primitive Types & Control Flow
 4. The Heart of Rust
 5. The Meat of Rust
-6. Final Lectures
+6. Closures & Threads
 7. Project Invaders
