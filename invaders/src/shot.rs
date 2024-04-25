@@ -30,7 +30,7 @@ impl Shot {
         self.timer = Timer::from_millis(250);
     }
 
-    pub fn dead(self) -> bool {
+    pub fn dead(&self) -> bool {
         // condition will evaluate to bool
         (self.exploding && self.timer.ready) || (self.y == 0)
     }
