@@ -23,10 +23,10 @@ impl Invaders {
                 if (x > 1)
                     && (x < NUM_COLS-2)
                     && (y > 0)
-                    && (y < 6) // determines num of invaders
+                    && (y < 7) // determines num of invaders
                     && (x % 2 == 0)
                     && (y % 2 == 0) {
-                        army.push(Invader { x, y});
+                        army.push(Invader { x, y });
                 }
             }
         } 
