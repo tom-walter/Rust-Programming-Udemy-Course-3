@@ -1,0 +1,17 @@
+# emoji
+alien1  👾
+alien2  👽
+saucer  🛸
+rocket  🚀
+astrom  👨‍🚀
+astrof  👩‍🚀
+satellite 🛰️
+flash   ⚡
+explode 💥
+
+# ascii
+half    ◒◓
+circle  ⦵⦻◯⦾
+hexa    ⬢⬣
+plane   △◬⟁
+shot    ⨨▴▵:
