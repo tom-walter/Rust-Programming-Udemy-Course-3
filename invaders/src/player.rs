@@ -59,7 +59,7 @@ impl Default for Player {
 impl Drawable for Player {
     fn draw(&self, frame: &mut Frame) {
         // draw player
-        frame[self.x][self.y] = "🚀";
+        frame[self.x][self.y] = "⟁";
         // draw shots
         for shot in self.shots.iter() {
             shot.draw(frame);
