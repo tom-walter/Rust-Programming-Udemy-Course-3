@@ -1,15 +1,25 @@
 # Rust-Programming-Udemy-Course-3
 
-# "Ultimate Rust Crash Course"
+## "Ultimate Rust"
 
-This repo documents my progress and exercises to learn the Rust programming langauge following this [Udemy Course](https://www.udemy.com/course/ultimate-rust-crash-course/).
+This repo documents my progress and exercises to learn the Rust programming langauge following a two-part Udemy Course by [Nathan Stocks](https://github.com/CleanCut).
 
-The course has the following sections:
+### Part 1
 
-1. Introduction
-2. Fundamentals
-3. Primitive Types & Control Flow
-4. The Heart of Rust
-5. The Meat of Rust
-6. Closures & Threads
-7. Project Invaders
+This [course](https://www.udemy.com/course/ultimate-rust-crash-course/) has the following sections:
+
+1. Introduction 🌟
+2. Fundamentals 📚
+3. Primitive Types & Control Flow 🔄
+4. The Heart of Rust ❤️
+5. The Meat of Rust 🍖
+6. Closures & Threads 🧵
+7. Project Invaders 👾
+
+### Part 2
+
+This [course](https://www.udemy.com/course/ultimate-rust-2/) has the following sections:
+
+1. Introduction 🌟
+2. Idomatic Rust (incl.: Traits, Errors, Testing, Multi-Threading) 🦀
+3. Game Prototype with Rusty Engine 🎮
