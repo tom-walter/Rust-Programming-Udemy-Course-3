@@ -21,5 +21,5 @@ This [course](https://www.udemy.com/course/ultimate-rust-crash-course/) has the 
 This [course](https://www.udemy.com/course/ultimate-rust-2/) has the following sections:
 
 1. Introduction 🌟
-2. Idomatic Rust (incl.: Traits, Errors, Testing, Multi-Threading) 🦀
+2. Intermediate Concepts (incl.: Traits, Errors, Testing, Multi-Threading) 🦀
 3. Game Prototype with Rusty Engine 🎮
