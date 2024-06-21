@@ -162,6 +162,63 @@
     ```
 
 ## 3. Publishing
+### Publishing on Crates.io
+* [crates.io](www.crates.io) is Rust's community crate registry
+* whatever you publish there will be **permanent**
+    * don't publish your private credentials, ssh keys, API keys, access tokens, etc.
+* package names need to be _unique_ because there is only one global namespace for all crates
+
+Publication Pre-Requisites
+1. log into crates.io with you GitHub account
+2. goto account settings and generate an access token
+3. run `cargo login` using your access token
+4. have package that you want to publish
+
+Polishing the `Cargo.toml`
+* the `Cargo.toml` has many additional fields that can provide useful information to the users of your crate
+* here is an example from the ´rusty_engine´
+    ```toml
+    [package]
+    name = "rusty_engine"
+    version = "6.0.0"
+    description = "Learn Rust with a simple, cross-platform, 2D game engine."
+    edition = "2021"
+    homepage = "https://github.com/CleanCut/rusty_engine"
+    repository = "https://github.com/CleanCut/rusty_engine"
+    readme = "README.md"
+    keywords = [ "game", "engine", "graphics", "audio", "rusty" ]
+    categories = [ "game-engines" ]
+    license = "MIT OR Apache-2.0"
+    ```
+    * adding a code `repository` makes it easier for other users to contribute or report issues
+    * `keywords` allows a max of 5 SEO-keywords to for better finding your crate on Crates.io
+    * `categories` allows a max of 5 _valid category slugs_ from Crates.io
+
+### Publishing
+* after the initial setup and after you developed a package, you can publish with `cargo publish`
+    ```console
+    $ cargo publish --help
+    Upload a package to the registry  
+
+    Usage: cargo.exe publish [OPTIONS]
+
+    Options:
+    -n, --dry-run              Perform all checks without uploading
+        --index <INDEX>        Registry index URL to upload the package to
+        --registry <REGISTRY>  Registry to upload the package to
+        --token <TOKEN>        Token to use when uploading
+    -h, --help                 Print help
+
+    Package Selection:
+    -p, --package [<SPEC>]  Package to publish
+    ```
+* this will re-compile (only publishes if compiled without error), check the versioning, check for un-committed code, etc.
+* anything published on Crates.io automatically gets its documentation published online on [docs.rs](https://docs.rs/) (for free)
+
+### No Exercise
+* there will be no exercise to prevent useless crates from littering Crates.io and limiting the the unique global namespace
+* if personal namespacing will be implemented for Crates.io, this section will be updated with an exercise
+
 ## 4. Closures
 ## 5. Iterators
 ## 6. Common Traits
