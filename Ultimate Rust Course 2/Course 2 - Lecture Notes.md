@@ -153,6 +153,13 @@
     //!
     //! This is my documentation
     ```
+### Exercise
+* render the documentation by running `cargo doc --no-deps --open`
+* challenge solution
+    ```
+    cargo doc --help | grep private
+      --document-private-items  Document private items
+    ```
 
 ## 3. Publishing
 ## 4. Closures
