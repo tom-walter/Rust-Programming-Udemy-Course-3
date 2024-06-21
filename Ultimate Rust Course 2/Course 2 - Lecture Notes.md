@@ -63,6 +63,97 @@
 * I manually implemented the suggestions from `clippy` that could not be done automatically
 
 ## 2. Documentation
+### Generating Documentation 
+* documentation is only useful, if it's readable
+* Rust can generate a website (html-files) with standardized documentation layout with ` cargo doc`
+* but even better is the command `cargo doc --no-deps --open`
+    * `--no-deps` will not render documentation for dependencies (only for your code)
+    * `--open` will open the index page of the documentation
+
+### Writing Documentation
+* there are two styles of documentation
+    1. triple slash (per-line style)
+    2. double asteriks (block style)
+* these are outer doc-strings (for functions, struct and constants)
+
+#### Triple Slash
+* each line of a doc-string beginswith 3 slahes `///`
+* we want to document the following constant
+    ```rust
+    /// Number of pieces in the puzzle
+    pub const PUZZLE_PIECES: u32 = 42;
+    ```
+* these doc-strings are always written above the constant or function-signature
+* the rendering of doc-string support common **markdown syntax** with headers, bold/italic, links, code snippets, etc.
+    * beware that code snippets inside doc-strings must be valid rust
+* let's add some infos to our constant:
+    ```rust
+    /// Number of pieces in the puzzle
+    ///
+    /// # History
+    ///
+    /// This is a separate paragraph.
+    /// - Clickable link: [`PUZZLE_PIECES`]
+    /// - We tried `7`, but this is better 🧩
+    pub const PUZZLE_PIECES: u32 = 42;
+    ```
+* here is another example for a `struct`
+    ```rust
+    /// This is a puzzle
+    pub struct Puzzle {
+        /// Number of pieces
+        pub num_pieces: u32,
+        /// Descriptive name
+        pub name: String,
+    }
+    ```
+* and for associated `impl`
+    ```rust
+    impl Puzzle {
+        /// Make a new puzzle
+        pub fn new() -> Self {
+            Self {
+                num_pieces: PUZZLE_PIECES,
+                name: "Forest Lake".into(),
+            }
+        }
+    }
+    ```
+
+#### Double Asteriks
+* we can also write documentation using a multi-line comment style with double asteriks
+    ```rust
+    /**
+    Number of pieces in the puzzle
+
+    # History
+
+    This is a separate paragraph.
+    - Clickable link: [`PUZZLE_PIECES`]
+    - We tried `7`, but this is better 🧩
+    **/
+    pub const PUZZLE_PIECES: u32 = 42;
+    ```
+* the rest of the markdown features are almost the same
+* for markdown links
+    * any code object in scope of the script can be linked
+    * any code object out of scope can be linked with an absolute path
+    ```rust
+    /// [Spawn a thread](std::thread::spawn)
+    ``` 
+
+#### Inner Doc-Strings
+* are used to document libraries and modules
+* these are constructed with 
+    * `//!` for per-line style
+    * `/*! !*/` for block style 
+* let's write documentation for our puzzle library
+    ```rust
+    //! HI! I'm a friendly Rust Puzzle Library.
+    //!
+    //! This is my documentation
+    ```
+
 ## 3. Publishing
 ## 4. Closures
 ## 5. Iterators
