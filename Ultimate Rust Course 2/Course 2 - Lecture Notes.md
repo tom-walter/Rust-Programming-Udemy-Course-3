@@ -220,7 +220,113 @@ Polishing the `Cargo.toml`
 * if personal namespacing will be implemented for Crates.io, this section will be updated with an exercise
 
 ## 4. Closures
+### What are closures?
+* a closure is an anonymous, enclosed function that can borrow or capture some data from the scope it is nested in
+* the syntax consists of a parameter list in pipes and an expression (in curly braces)
+    ```rust
+    |params| expr
+    |params| {expr1; expr2}
+    ```
+* it can also be assigned to a variable and called later 
+* the compiler will automatically figure out the parameters types and return types by how you use the closure
+* example
+    ```rust
+    let add = |x, y| x + y;
+    let z = add(1, 2) // returns 3 
+    ```
+
+### Capturing and Borrowing
+* a closure will automatically borrow a reference to the values in the enclosing scope
+* example
+    ```rust
+    let s = "🍓";
+    let f = move || {
+        println!("{}", s);
+    };
+    f(); // prints 🍓
+    ```
+* the value borrowed by the closure must live at least as long as the closure (otherwise the code will not compile)
+* closures also support `move` semantics which allows to transfer the ownership of the variable to the closure (remedying the lifetime issue)
+
+### Closures in Higher-Order Function
+* in order to use closures as function parameters, then need to be type-annotated from [`std:ops`](https://doc.rust-lang.org/std/ops/index.html) with
+    * `Fn`
+    * `FnMut`
+    * `FnOnce`
+
 ## 5. Iterators
+### Iterators
+* in the previous course, we learned that `for` loop can iterate over any any iterable collection
+* but what makes a collection data type iterable?
+* a collection becomes iterable through the method `.int_iter()` which is implemeted onto a struct via the trait `IntoIterator`
+* anything that implements this trait can called iterator function
+* the method `.int_iter()` returns an iterator which takes _ownership_ of the collection it is called on and consumes the collection
+
+Examples
+* `for` loop style iteration
+    ```rust
+    let v = vec![6, 7, 8, 9];
+    for n in v.into_iter() {
+        println!("{}", n);
+    }
+    ```
+    * a vector implements the trait `IntoIterator`
+    * a vector automatically turns into an iterator in a `for` loop
+    * that means if a vector goes out of scope at the end of the loop
+* functional style iteration
+    ```rust
+    let v = vec![6, 7, 8, 9];
+    v.into_iter().for_each(|num| println!("{}", num));
+    ```
+* functional iterator are faster than for loops
+    * this is because `for` loop may be compiled line-by-line
+    * whereas the whole functional iterator is evaluated by the compiler and optimized together
+
+### Iterator Adaptors
+* in functional paradigm, the iterator adaptor takes an iterator and outputs a different iterator and takes some action on values that are passed through 
+* many iterator methods in Rust are also iterator adaptors, allowing for method chaining
+    ```rust
+    let v = vec![6, 7, 8];
+    let total: i32 = v
+        .into_iter()            //  6,  7,  8
+        .map(|x| x * 3);        // 18, 21, 24
+        .filter(|y| *y % 2 == 0)// 18, 24
+        .sum();                 // 42
+    ```
+    * `.map()` applies a function or closure to each value (and passed them along)
+    * `.filter()` evaluates a condition and only values that evaluate true under this condition are passed along
+    * `map`'s closure takes ownership of its values but `filter`'s closure only takes an immutable reference
+    * iterator adaptors need to end in _iterator consumer_ causing the chain of adaptors to actually process
+* how do you what each iterator adaptor need?
+    * every iterator adaptor is documented
+
+### Iterator Consumers
+    * `.for_each()` passes each values to a closure and consumes them indivdually
+    * `.sum()` is another useful consumer
+    * `.collect()` gather all the values passed through the iterator chain and puts them into a new collection
+* but iterators rely heavily on generics that the compiler can't know anymore what is the result of the final data type
+    * you can either annotate the variable the iterator feeds into
+    * or you can use the turbofish `::<>` syntax
+* the turbofish `::<>` declares the type of generic function
+    * it goes between the method/function name and the argument list: `.sum::<i32>()`
+* a special consumer is the `.drain()` that removes some or all values from a collection and returns the empty collection
+
+### Mutable Iterators
+* what if you don't want to consume the collection while iterating over it?
+    * you can eihter call the method     
+    ```rust
+    v.into_iter()   // consumes v, returns owned items
+    v.iter()        // returns immutable references
+    v.iter_mut()    // returns mutable references
+    ```
+    * or use its syntactic sugar
+    ```rust
+    for _ in v      // v.into_iter()
+    for _ in &v     // v.iter()
+    for _ in &mut   // v.iter_mut()
+    ```
+* hashmaps have iterator methods that can go over keys only, values only, or key-value pairs together
+
 ## 6. Common Traits
 ## 7. Creating Errors
 ## 8. Handling Errors
