@@ -328,6 +328,191 @@ Examples
 * hashmaps have iterator methods that can go over keys only, values only, or key-value pairs together
 
 ## 6. Common Traits
+* we will learn about traits from the standard library
+* what can implement a trait? -> 4 things
+    1. `struct`s
+    2. `enum`s
+    3. `closure`s
+    4. `function`s
+* but closures and functions can only implement a view advanced traits, we will focus on implementing traits for structs and enums
+
+### Derivable Traits
+* a trait can be derived if it has a `#[derive()]` macro defined it
+* the documentation for a trait will tell if it can be derived
+
+#### Debug
+* the most common trait to derive is `Debug`
+    ```rust
+    #[derive(Debug)]
+    pub struct Puzzle {
+        pub num_pieces: u32,
+        pub name: String,
+    }
+    ```
+* as long as all elements inside your struct or enum also have this trait, it can be derived for the super entity
+* all primitives and most standard library types already posses the trait
+* Debug trait is used for debug formatting
+```rust
+println!("{:?}", puzzle); // Debug 
+println!("{:#?}", puzzle); // Pretty Debug
+```
+* `"{:?}"` tries to create a one line representation of the struct
+* `"{:#?}"` tries to create a multi-line, indented representation of the struct
+
+#### Clone
+* another common trait to derive is `Clone`
+    * allows an object to be cloned by called the method `.clone()`
+    ```rust
+    #[derive(Clone, Debug)]
+    pub struct Puzzle {
+        pub num_pieces: u32,
+        pub name: String,
+    }
+    // ...
+    let puzzle2 = puzzle.clone()
+    ```
+* Rust is not an interpreted language like Python or Ruby, where the interpreter can introspect objects at run-time
+* therefore, Rust objects need to implement `Clone` at compile-time
+
+#### Copy
+* related to `Clone` is the `Copy` trait 
+    * copy is a sub-trait of clone, meaning it cannot be derived without the parent trait 
+* if your type implements `Copy`, then it will be copied instead of moved in `move` situations
+* this makes sense for small values that fit entirely on the stack (integer, float, boolean have copy trait)
+* if a type uses the heap, it cannot implement `Copy`
+* for our `Puzzle` example, we cannot derived `Copy` since `String` uses the heap
+* another example with single type `enum`
+    ```rust
+    #[derive(Clone, Copy)]
+    pub enum PuzzleType {
+        Jigsaw
+    }
+    ```
+    * small types likes enums are easier to copy than to deal with references and move semantics
+
+### Standard Library Traits
+* there are 3 steps to manually implement a trait
+    1. bring it into scope
+    * some traits are in the standard library prelude (automatically in scope)
+    * but many useful traits need to imported first
+    2. boilerplate
+    * write the interfaces that are needed for this trait
+    * your IDE can generate a skeleton or you can copy it from the documentation
+    3. implementation
+    * write the actual functions that you want to implement
+
+#### Default
+* the `Default` trait is included in the standard library prelude (already in scope)
+* it gives you zero numbers, empty strings, and empty collections, but we can use to define our type's own default-values
+    ```rust
+    impl Default for Puzzle {
+        fn default() -> Self {
+            todo!();
+            //panic!("not yet implemented");
+        }
+    }
+    ```
+* let's write the actual implementation
+    ```rust
+    impl Default for Puzzle {
+        fn default() -> Self {
+            Puzzle {
+                num_pieces: PUZZLE_PIECES,
+                name: "Forest Lake".to_string(),
+            }
+        }
+    }
+    ```
+* there are several patterns of idiomatic usage
+    * initialize a struct with some default values
+    ```rust
+    let puzzle = Puzzle {
+        num_pieces: 3000,
+        ..Default.default()
+    }
+    ```
+    * the `..` is the range operator and using it this way fills out all remaining values (called "struct update syntax")
+
+#### PartialEq / Eq
+* partial equality and equality traits are `PartialEq` and `Eq`
+* `PartialEq` does the actual calculations to test for equality
+* `Eq` is a marker trait for when the equality logic is _reflexiv, transitive and symmetric_
+    * _reflexiv_: any number `a` is equal to itself `a == a`
+    * _transitive_: for any numbers: `a, b, c`; if `a == b` and `b == c`, then `a == c`
+    * _symmetric_: any numbers: `a, b`; if `a == b` then `b == a`
+* let's write the actual implementation
+    * remember `&` is an immutable reference
+    * this compares to objects of the same type against ech other returning a `true` when equal and a `false` when unequal
+* 1st impl for `PartialEq` & `Eq`
+    ```rust
+    impl PartialEq for Puzzle {
+        fn eq(&self, other: &Self) -> bool {
+            (self.num_pieces == other.num_pieces) && (self.name && other.name)
+        }
+    }
+
+    impl Eq for Puzzle {} // marker trait
+    ```
+    * implementing `eq` allows us to use the struct as a key in a hashmap 
+* 2nd impl for only `PartialEq`
+    ```rust
+    impl PartialEq for Puzzle {
+        fn eq(&self, other: &Self) -> bool {
+            (self.num_pieces == other.num_pieces) &&
+            (self.name.to_lowercase() && other.name.to_lowercase())
+        }
+    }
+    ```
+
+#### From / Into
+* they are an extremely useful pair (included in the standard prelude)
+* if you implement `From`, then `Into` gets automatically implemented for you
+    * so implement `From` to get both
+* however, it's more ideomatic to use the `Into` in generic functions
+* they describe the transformation between two types fro, different viewpoints
+    ```rust
+    From<T> for U
+    Into<U> for T
+    ```
+* for our example, we want to have
+    ```rust
+    From<Puzzle> for String
+    Into<String> for Puzzle    
+    ```
+* in this "conversion" for our example, we want to keep the name and lose the info on number of pieces
+    ```rust
+    impl From<Puzzle> for String {
+        fn from(puzzle: Puzzle) -> Self {
+            puzzle.name
+        }
+    }
+    // use `From` like this
+    let puzzle = Puzzle::default();
+    let s = String::from(puzzle);
+    // use `Into` like this
+    let t: String = puzzle.into();
+    ```
+* usage in generic functions
+    ```rust
+    pub fn show<T: Into<String>>(s: T) {
+        println!("{}", s.into());
+    }
+    ```
+    * the input argument is of generic type `T`, which is quanlified as anything that can turn into a string `<T: Into<String>>`
+* BUT the drawback of `From`/`Into` implemenation is that it consumes the puzzle
+    * to avoid this we can use immutable references `&` and cloning
+    * be careful with cloning though, because cloning large objects is expensive
+    ```rust
+    impl From<&Puzzle> for String {
+        fn from(puzzle: &Puzzle) -> Self {
+            puzzle.name.clone()
+        }
+    }
+    // use in the generic show function
+    let puzzle = Puzzle::default();
+    show(&puzzle);
+    ```
+
 ## 7. Creating Errors
 ## 8. Handling Errors
 ## 9. Unit Tests
