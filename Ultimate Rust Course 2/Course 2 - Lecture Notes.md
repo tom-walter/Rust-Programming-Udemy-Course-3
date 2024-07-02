@@ -514,7 +514,224 @@ println!("{:#?}", puzzle); // Pretty Debug
     ```
 
 ## 7. Creating Errors
+* we'll learn to create our own errors (for our own library)
+
+### Error Building Essentials
+1. `enum`:
+    * errors should be enums
+    * technically, everything that implements the error trait can be an error
+    * but doing it through enums is both easier and ideomatic
+    ```rust
+    pub enum PuzzleError {
+        WontFit(u16),
+        MissingPiece,
+    }
+    ```
+2. _group_: 
+    * group your error as variants of as few enums as possible/ as makes sense
+3. _return_:
+    * return only your own errors from your own library
+    * convert other lib's error into your own
+    ```rust
+    // error from another lib used in my lib
+    pub enum FractalError {
+        SadSnowflake,
+    }
+
+    pub enum PuzzleError{
+        WontFit(u16),
+        MissingPiece,
+        PrettyImageless, // adopted from FractalError  
+    }
+    ```
+    * not doing this
+        * gives external dependencies the ability to break your public API
+        * prevents you from updating your lib's backend without breaking your API
+    * the exceptions are std lib errors which can be passed through
+4. `non-exhaustive`
+    * your error enum should be non-exhaustive
+    * by default, enums in Rust are exhaustive but the `#[non_exhaustive]` attribute enables that
+    ```rust
+    #[non_exhaustive]
+    pub enum PuzzleError{
+        WontFit(u16),
+        MissingPiece,
+    }
+    ```
+    * this makes it so you can't match without a wildcard
+    ```rust
+    match my_error {
+        PuzzleError::WontFit(_) => {}
+        PuzzleError::MissingPiece => {}
+        _ => {} // default arm in match
+    }
+    ```
+    * this prevents new error-variants from breaking user code
+5. `Debug+Display+Error`
+    * implement the `Debug`, `Display`, `Error` traits in that order
+    * because the `Error` is sub-trait of `Debug` and `Display`
+    ```rust
+    // 1. Debug
+    #[derive(Debug)]    
+    #[non_exhaustive]
+    pub enum PuzzleError{
+        WontFit(u16),
+        MissingPiece,
+    }
+
+    // 2. Display
+    use std::fmt::{Display, Formatter, Result};
+
+    impl Display for PuzzleError {
+        fn fmt(&self, f: &mut Formatter) -> Result {
+            use PuzzleError::*;
+            match self {
+                PuzzleError::MissingPiece => write!(f, "Missing a piece"),
+                PuzzleError::WontFit(n) => write!(f, "Piece {} doesn't fit!", n),
+            }
+        }
+    }
+
+    // 3. Error
+    use std::error::Error,
+
+    impl Error for PuzzleError {} // does not require any additional functionality
+    ```
+
+
+### `thiserror`
+* from all previous steps, step 5 requires the most labor
+* but there is an easier way thanks to the `thiserror` crate
+* add it to dependencies section in the `Cargo.toml`
+    ```toml
+    [dependencies]
+    thiserror = "1.0"
+    ```
+* now we can bring it into scope
+    ```rust
+    use thiserror::Error;
+
+    #[derive(Debug, Error)]    
+    #[non_exhaustive]
+    pub enum PuzzleError{
+        #[error("Piece {0} doesn't fit!")]
+        WontFit(u16),
+        #[error("Missing a piece.")]
+        MissingPiece,
+    }
+    ```
+    * the `thiserror::Error` is a derive macro that will implement both `Display` and `Error` trait
+    * the return string for the `Display` trait is specified by annotation
+* this approach is **functionally identical** and requires **much less code**!
+
 ## 8. Handling Errors
+* how do you handle error in an application?
+
+### Recap
+* recap of the `Result` enum
+    * it has only two variants that wrap either the intended output or an error
+    ```rust
+    #[must_use]
+    enum Result<T, E> {
+        Ok(T), // wraps generic output
+        Err(E),// wraps generic error
+    }
+    ```
+* there are 2 types of errors (from viewpoint of handling)
+    1. non-recoverable
+    2. recoverable
+
+### 1. Non-Recoverable Errors
+* there is no way for the program to proceed, then use the `panic!` macro which crashes the program
+    ```rust
+    // manually panic
+    panic!("Your computer is on fire ️‍🔥");
+
+    // same thing if result is Result::Err
+    result.expect("Your computer is on fire ️‍🔥");
+
+    // same thing, but without message
+    result.unwrap();
+    ```
+* only use this option, if you're certain there is not other way
+
+### 2. Recoverable Errors
+#### Handle
+* if an error is recoverable, we can use the the `if let` pattern
+    * this is very useful when the error is more important than the success
+    ```rust
+    if let Err(e) = my_result {
+        println!("Warning: {}", e);
+    }
+    ```
+    * if the pattern `Err(e)` matches the variable, the value is bound by the `if`-block
+* if you want to supply a default value in case of error, use a `match`-expression to handle both the error and success case
+    ```rust
+    let score = match get_saved_score() {
+        Ok(x) => x,
+        Err(_) => 0,
+    }
+    ```
+    * this long `match`-expression can be simplified to
+    ```rust
+    let score = get_saved_score().unwrap_or(0);
+    ```
+
+#### Return
+* when we want to return an error, we can also use use a `match`-expression
+    ```rust
+    fn porm() -> Result<String, io::Error> {
+        let file = match File::open("pretty_words.txt") {
+            Ok(f) => f,
+            Err(e) => return Err(e),
+        }
+        // do stuff with file
+    }
+    ```
+    * if the function does not know how to handle the error, we hand to the caller
+* this pattern is so common that Rust provides a syntactic shorthand `?` (the question-mark operator)
+    ```rust
+    fn porm() -> Result<String, io::Error> {
+        let file = match File::open("pretty_words.txt")?;
+        // do stuff with file
+    }
+    ```
+    * this approach is **functionally identical** and requires **much less code**!
+* the `?` operator can also be chained
+    ```rust
+    optimus.stand()?.transform()?.rollout()?.chase()?;
+    ```
+
+### Handling Errors in Applications
+* what if we're dealing iwht multiple errors types
+* for lib: convert errors of other libraries and dependencies into your own types
+* for applications, we can leverage traits
+* there is a long-wieldy manual way, but this time we skip to shorter version
+* add `anyhow` to dependencies section in the `Cargo.toml`
+    ```toml
+    [dependencies]
+    anyhow = "1.0"
+    ```
+    * check out the[ documentation](https://docs.rs/anyhow/latest/anyhow/)
+    * you can also [`eyre`](https://docs.rs/eyre/latest/eyre/) or [`snafu`](https://docs.rs/snafu/latest/snafu/)
+* in this example, we want to load a puzzle from a file, but multiple errors could occur
+    * interacting with the filesytem can cause IO-errors
+    * loading data from file can cause issues 
+    ```rust
+    use anyhow::{Context, Result};
+    use puzzles::Puzzle;
+    use std::fs::File;
+
+    fn get_puzzle(filename: &str) -> Result<Puzzle> {
+        let fh = File::open(filename)
+            .with_context(|| format!("couldn't open the file {}", filename))?;
+        let puzzle = Puzzle::from_file(fh).context("couldn't covert data into puzzle")?;
+        Ok(puzzle)
+    }
+    ```
+    * the `anyhow::Result` let's you specify the Ok type without the need to specify mulitple error types
+    * the `anyhow::Context` acts as better replacement for `.expect()` 
+
 ## 9. Unit Tests
 ## 10. Integration Tests
 ## 11. Benchmarks
