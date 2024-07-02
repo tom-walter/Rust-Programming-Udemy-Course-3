@@ -733,8 +733,133 @@ println!("{:#?}", puzzle); // Pretty Debug
     * the `anyhow::Context` acts as better replacement for `.expect()` 
 
 ## 9. Unit Tests
+### Basics of Unit Testing
+* unit testing is about testing small parts of code
+* the ideomatic place for unit tests is inside their own submodule at the bottom of the same file
+* the convention is to put this sumodule inline by calling it `mod test`
+* but we don't want to compile the tests into release version of the code, so we use the attribute `#[cfg(test)]`
+* in sinde the sub-module, we need access to the things we want to test via `use super::*`
+    ```rust
+    pub fn snuggle(bunnies: u128) -> u128 {
+        bunnies * 8
+    }
+
+    #[cfg(test)]
+    mod test {
+        use super::*,
+
+        #[test]
+        fn snuggling_bunnies_multiply() {
+            assert_eq!(snuggle(2), 16);
+        }
+    }
+    ```
+* there are 3 assert macros
+    * `assert_eq!(a, b)` takes two arguments of the same type that implement `PartialEq` trait, succeeds when the arguments are equal
+    * `assert_ne!(a, b)` takes two arguments of the same type, succeeds when the arguments are not equal
+    * `assert!(a >= b)` covers the rest of the logical conditions through expression that evaluate to boolean values
+* panicking fails the test unless it is marked with the attribute `#[should_panic]` 
+* tests with result type in return value
+    ```rust
+    #[test]
+    fn bunny_result() -> Result<(), ParseIntError> {
+        let num_bunnies: u64 = "four".parse()?;
+        assert_eq!(num_bunnies, 4);
+        Ok(())
+    }
+    ```
+    * when we run a failing test, the test-run may stop after the first fail
+* tests are run with `cargo test`
+    * to run a specific unit test, specify like this
+    ```
+    cargo test test::bunny_result()
+    ``` 
+
+### Crates and Libraries
+* there are two definitions of crate
+    1. crate = package (which can contain a library)
+    2. crate = a library or a binary
+    <p align="left">
+    <img src="crates.png"  width=500/>
+    </p> 
+* in the official Rust documentation, the second is always used
+
 ## 10. Integration Tests
+### Basics of Integration Tests
+* integration tests run validate the interaction between larger pieces of code
+* they go into a separate directory at the root of the project
+    ```
+    .
+    ├── Cargo.lock
+    ├── Cargo.toml
+    ├── /src
+    │   └── lib.rs
+    └── /tests
+    ```
+* any file in the tests directory will be searched for tests
+* inside you can import the functions from the libraries and mark tests with attribute `#[test]`
+* on this level it works pretty much like unit testing in the sense that you write functions that validate the proper interaction of components
+
+### Binary vs Library
+* the convention is to put as little as possible in your binary (`main.rs`) and as much as possible into your library (`lib.rs`)
+* so that you don't need to test your binary
+* why? because it is a hassle!
+* you need to run you binary through `std::process::Command` inside a sup-process and test the outputs on this outside level
+
 ## 11. Benchmarks
+### Introduction to Benchmarking
+* Rust has a built-in way to benchmark your code (in nightly and not yet fully stable)
+* instead we will use `Criterion`, an established benchmarking package
+* this is package we want to add in dev-dependencies section of Cargo.toml
+    ```toml
+    [dev-dependencies]
+    criterion = { version = "0.3", features = ["html_reports"] }
+
+    [[bench]]
+    name = "snuggle_speed"
+    harness = false
+    ```
+    * dev-dependencies don't get compiled into the release version
+    * there can be several `bench` section so we need double square brackets
+* similar to integration testing, we need a separate directory at root level
+    ```
+    .
+    ├── Cargo.lock
+    ├── Cargo.toml
+    ├── /src
+    │   └── lib.rs
+    └── /benches
+       └── snuggle_speed.rs
+    ```
+    * the file inside the benches directory needs to match the one Cargo.toml
+* here is an example 
+    ```rust
+    use criterion::{black_box, criterion_group, criterion_main, Criterion};
+    use hello::snuggle;
+
+    pub fn snuggle_benchmark(c: &mut Criterion) {
+        c.bench_function(
+            "snuggle 2", |b| b.iter(|| snuggle(black_box(2)))
+            // "snuggle 2" is a string for the later display
+            // b.iter is the repeated call for benchmarking
+            // snuggle() is the function to be benchmarked
+            // black_box() is wrapper for input arguments to prevent unwanted compiler optimization
+        );
+    }
+
+    criterion_group!(benches, snuggle_benchmark);
+    criterion_main!(benches);
+    ```
+* execute your benchmark tests with `cargo bench`
+* the generated HTML-reports have been saved to `target/criterion/report/index.html`
+
+### Tips for Benchmarking
+* implement the function in readable, ideomatic Rust
+* don't assume which functions are slow, run benchmarks to empiric
+* if possible, compare several implementations
+* to be generally accurate, don't run benchmarks on busy machines
+* to be specifically accurate, run benchmarks in a prod-like environment
+
 ## 12. Logging
 ## 13. Multi-Threading
 ## 13. Channels
