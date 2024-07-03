@@ -861,6 +861,64 @@ println!("{:#?}", puzzle); // Pretty Debug
 * to be specifically accurate, run benchmarks in a prod-like environment
 
 ## 12. Logging
+### Basics of Logging
+* logging is not included in the standard library
+* but there is a de-facto default library called `log` 
+* let's add this to our puzzles library
+    ```toml
+    [dependencies]
+    log = "0.4"
+    ```
+* there are 5 levels of logging with corresponding macro
+    * they are listed in descending order of priority
+    ```rust
+    use log::{error, warn, info, debug, trace};
+
+    error!("Serious stuff");
+    warn!("Pay attention");
+    info!("Useful stuff");
+    debug!("Extra info");
+    trace!("All the things");
+    ```
+    * macros are imported with exclamation mark but called with exclamation
+* at run-time a level of priority will be set
+    * all message of equal or higher priority to the level will be sent
+    * lower priority messages will be omitted
+* logging macros utilities
+    * they can take a `target:` argument to indicate the module 
+    * when no `target:` they will default to the actual name of the module
+    * they also accept println-macro style strings with curly braces for arguments
+    * this helps to show which variable may have faulty or unexpected contents
+
+### Logging Output
+* the log library defines a common interface via traits that works across your modules
+* but we also need to specify where the message from logging go
+* NOTE: the logging output library is separate from the log library itself
+    * and there are many different ones to choose from
+    * simple output logger:
+        * `env_logger`
+        * `simple_logger`
+        * `simple_log`
+        * `pretty_env_ log`
+        * `stderrlog`
+    * for compatibale output logger, view the [`log` documentation](https://docs.rs/log/latest/log/#available-logging-implementations) 
+* let's add the `env_logger` to our Cargo.toml
+    ```toml
+    [dependencies]
+    log = "0.4"
+    env_logger = "0.9"
+    ```
+* inside the `main()` function at the top initialize the logger
+    ```rust
+    fn main() -> Result<()> {
+        env_logger::init();
+    }
+    ```
+    * the default level is error
+    * the level is controlled via the environment variable `RUST_LOG`
+    * we can temporarly change it by running `RUST_LOG=info cargo run`
+* the advantages of this setup: ubiquitious and easry to apply
+
 ## 13. Multi-Threading
 ## 13. Channels
 
