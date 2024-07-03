@@ -919,6 +919,24 @@ println!("{:#?}", puzzle); // Pretty Debug
     * we can temporarly change it by running `RUST_LOG=info cargo run`
 * the advantages of this setup: ubiquitious and easry to apply
 
+### Exercise
+* view the logging output in console:
+    ```terminal
+    $ RUST_LOG=trace cargo run
+        Finished dev [unoptimized + debuginfo] target(s) in 0.03s
+        Running `target\debug\exercise_g.exe`
+    [2024-07-03T11:04:53Z DEBUG exercise_g] A frog has been created
+    [2024-07-03T11:04:53Z TRACE exercise_g] A default frog was generated: Frog { energy: 5, sleeping: false }
+    [2024-07-03T11:04:53Z INFO  exercise_g] The frog has 4 left
+    [2024-07-03T11:04:53Z INFO  exercise_g] The frog has 3 left
+    [2024-07-03T11:04:53Z INFO  exercise_g] The frog has 2 left
+    [2024-07-03T11:04:53Z INFO  exercise_g] The frog has 1 left
+    [2024-07-03T11:04:53Z INFO  exercise_g] The frog has 0 left
+    [2024-07-03T11:04:53Z WARN  exercise_g] The frog has run out of energy and will go to sleep
+    [2024-07-03T11:04:53Z ERROR exercise_g] The frog is already sleeping
+    [2024-07-03T11:04:53Z ERROR exercise_g] The frog is already sleeping
+    ```
+
 ## 13. Multi-Threading
 ## 13. Channels
 
