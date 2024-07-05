@@ -19,7 +19,21 @@
 * compiling this should open an empty window
 
 ## 4. Game State
+* you will need to store the game's data
+* that's the game state and it containts, for instance:
+    * player's name
+    * player's status & inventory
+    * current scores, events, etc.
+    * anything the needs to persist across a single frame
+* let's also implement some default value for the game state with the trait `Default`
+
 ## 5. Game Logic Function
+* a game is divided into frames
+* a frame is one run through your game's logic to produce a new image to display on screen
+* we need to define and add the game logic function to the game
+* the game logic requires access to the engine and the game state
+* as an example the game logic may increment the current score
+
 ## 6. Sprites
 ## 7. Coliders
 ## 8. Keyboard Input
