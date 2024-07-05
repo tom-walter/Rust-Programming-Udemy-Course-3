@@ -35,7 +35,40 @@
 * as an example the game logic may increment the current score
 
 ## 6. Sprites
-## 7. Coliders
+* a sprite in `rusty_engine` is a 2D image
+    * its transform (translation, rotation, and scale)
+    * its colliders
+    * and other associated metadata
+* we will use sprites for all in-game things like
+    * player character, a car, etc.
+* sprites are created through the engine struct
+* sprites have label by which they can be called from the assets
+* the **position** of the sprite on screen can be changed by the attribute `sprite.translation = Vec2::new(x: f32, y: f32)`
+* the **rotation** of the sprite on screen can be changed by the attribute `sprite.rotation = std::f32::consts::FRAC_PI_2`
+    * sprites are assumed to be facing right at zero degrees
+    * 0 is right, π/2 is up, π is down, 3/2π is down 2π is full circle
+    * the `rust_engine::prelude` also includes constants for directions
+* the **size** of the sprite on screen can be changed by the attribute `sprite.scale = 3.0`
+    * large than 1.0 increases the size
+    * smalelr than 1.0 decreases the size
+* the **layer** of the sprite on screen can be changed by the attribute `sprite.layer = 1.0`
+    * the default layer is 0.0
+    * NOTE: sprites on the same layer will non-deterministically overlap each other
+    * thus, we should explicitly control the layer position 
+
+## 7. Colliders
+* all sprites also come with colliders that are disabled
+* the `rusty_engine` comes with a demo on colliders
+* to enable collision set the attribute `sprite.collision = true`
+* we can add another sprite to collide into 
+* a collision causes a two collision event
+    * at the start and the end of the collision
+    * a collision event also shows the pair of objects that collided
+* colliders are convex polygon that can
+    * detect collisions between sprintes
+    * be displayed on screen `engine.show_colliders = true`
+
+
 ## 8. Keyboard Input
 ## 9. Mouse Input
 ## 10. Text
