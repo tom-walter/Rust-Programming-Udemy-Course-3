@@ -938,7 +938,254 @@ println!("{:#?}", puzzle); // Pretty Debug
     ```
 
 ## 13. Multi-Threading
+### Recap & Foundations
+* Rust has a portable, built-in API wrapping native operating system threads (including but not limited to MacOS, Linux, Windows)
+* every process or program starts with a single thread → **main thread**
+* but a process can run multiple thread because
+    * running multiple threads is cheaper than running mulitple processes
+    * threads in the same process can share memory
+* each CPU core can only run a single thread
+* parallel processing is when you want to process thing on multiple CPUs at the same time
+    * creating thread allocates a RAM for the thread's own stack (a couple of megabytes)
+    * whenever a CPU switches from one thread to another it has to an expensive context switch
+    * more threads on one core means more overhead
+* multi-threading vs async-await
+    * if you want to continue doing some work on the main thread while you wait on disk-IO or network-IO, then you want to use async-await
+    * more efficient way to wait concurrently
+* from Course 1, you should remember this basic setup
+    ```rust
+    use std::thread;
+
+    fn main() {
+        let handle = thread::spawn{move ||
+            // do stuff in child thread
+        };
+
+        // do stuff simultaneously in main thread
+
+        // wait until all threads exited
+        handle.join().unwrap();
+    }
+    ```
+
+### Implementation Example
+* in our example, we want to make spaghetti, which consists
+    * cooking spaghetti
+    * cooking sauce
+    * setting the table
+* to simulate parallizable tasks, we implement to people mom and dad who execute these tasks
+    ```rust
+    use log::{error, info};
+    use std::thread;
+    use std::time::Duration;
+    use std::env;
+
+    fn sleep(seconds: f32) {
+        thread::sleep(Duration::from_secs_f32(seconds));
+    }
+
+    pub mod dad {
+        use super::{info, sleep};
+
+        pub fn cook_spaghetti() -> bool {
+            info!("Cooking the spaghetti...");
+            sleep(4.0); // blocks the thread for 4 sec
+            info!("Spaghetti is ready!");
+            true // returns true and releases the thread
+        }
+    }
+
+    pub mod mom {
+        use super::{info, sleep};
+
+        pub fn cook_sauce_and_set_table() {
+            sleep(1.0);
+            info!("Cooking the sauce...");
+            sleep(2.0);
+            info!("Sauce is ready! Setting the table...");
+            sleep(2.0);
+            info!("Table is set!");
+        }
+    }
+
+    fn main() {
+        if env::var("RUST_LOG").is_err() {
+            // set the log-level to info
+            env::set_var("RUST_LOG", "info")
+        }
+        env_logger::init();
+
+        // spawns a separate thread, we're other tasks happen
+        let handle = thread::spawn(|| dad::cook_spaghetti());
+
+        // mom thread starts and runs in parallel to dad thread
+        mom::cook_sauce_and_set_table();
+
+        // it is clean to join threads
+        // otherwise it kills all child thread when main exits
+        if handle.join().unwrap_or(false) {
+            info!("Spaghetti time!");
+        } else {
+            error!("Dad messed up the spaghetti");
+        }
+    }
+    ```
+* you can run this code online at the [Rust playground](https://play.rust-lang.org/?version=stable&mode=debug&edition=2021)
+    * no Cargo.toml or anything else is required
+* this generates the following output
+    ```
+    [2024-07-03T14:23:22Z INFO  playground::dad] Cooking the spaghetti...
+    [2024-07-03T14:23:23Z INFO  playground::mom] Cooking the sauce...
+    [2024-07-03T14:23:25Z INFO  playground::mom] Sauce is ready! Setting the table...
+    [2024-07-03T14:23:26Z INFO  playground::dad] Spaghetti is ready!
+    [2024-07-03T14:23:27Z INFO  playground::mom] Table is set!
+    [2024-07-03T14:23:27Z INFO  playground] Spaghetti time!
+    ```
+
 ## 13. Channels
+### Channel Libraries
+* now, we know how to start a thread, but do they communicate?
+* threads can send information between each other requiring a channel
+* the standard library has channels `std::sync::mpsc`
+    * this was created by the original Rust Servo team
+    * but it has many design-flaws and removing/ rewriting them would break compatibility
+    * breaking compatibility of a standard library is not permissable 
+* the `crossbeam::channel` has become the alternative
+    * they are faster, more efficient, and have more features
+
+### Basics of Channel 
+* a channel is a one-way queue that threads can use to send type of value to another thread
+* for a value to be able to send, it needs the `Send` trait (a marker trait)
+* all primitives and most std-lib types are `Send`-able
+* there are two flavors of channels
+1. Bounded: `channel::bounded(8)`
+    * a bounded channel has fixed capacity
+    * once full it will block the thread from sending any more values through the channel
+    * sending can resume, once a receiver thread pull something out of the channel
+2. Unbounded: `channel::unbounded()`
+    * the size of this channel will grow indefinitely (until you run out of memory)
+* Receivers
+    * both types of channels can have multiple receivers
+    * which channel will receive the value is undefined
+* Senders
+    * channels can have multiple senders 
+    * first send is first in channel
+* Flow of Information
+    * you can also multiple receivers and multiple senders on one channel, but the flow only goes in one direction
+    * for bidirectional communication, more than one channel is required
+    * cyclical communication has potential for deadlock
+    * it is good practice to design channels in an acyclic graph
+
+### Implemenation Example
+* add `crossbeam` to the Cargo.toml
+    ```toml
+    [dependencies]
+    crossbeam = "0.8"
+    ```
+* let's build a small cafeteria to illustrate the idea 
+    * we'll have a cafeteria worker per thread
+    * they'll be converting lunch orders into actual lunches
+* inside main.rs, we'll implement channels and threads
+    * `Receiver` and `Sender` are traits for our channel
+    ```rust
+    use crossbeam::channel::{self, Receiver, Sender};
+    use std::{thread, time::Duration};
+
+    #[derive(Debug)]
+    enum Lunch {
+        Soup,
+        Salad,
+        Sandwich,
+        HotDog,
+    }
+
+    // each worker gets
+    // - a name to identify them
+    // - a Receiver End on the Order queue (channel)
+    // - a Sender End on the Lunch rollout queue (channel)
+    fn cafeteria_worker(name: &str, orders: Receiver<&str>, lunches: Sender<Lunch>) {
+        // a channel has IntoIterartor trait and pauses until something is received
+        // when the channel is closed, the for-loop ends
+        for order in orders {
+            info!("{} receives an order for {}", name, order);
+            let lunch = match &order {
+                x if x.contains("soup") => Lunch::Soup,
+                x if x.contains("salad") => Lunch::Salad,
+                x if x.contains("sandwhich") => Lunch::Sandwich,
+                _ => Lunch::HotDog,
+            };
+            for _ in 0..order.len() {
+                thread::sleep(Duration::from_secs_f32(0.1))
+            }
+            info!("{} sends a {:?}", name, lunch);
+
+            // the sender end sends something into the channel
+            if lunches.send(lunch).is_err() { break; }
+        }
+    }
+    ```
+* now for the main function
+    ```rust
+    use log::info; // logging the outputs show-cases parallel execution  
+    use std::env;
+
+    fn main() {
+        if env::var("RUST_LOG").is_err() { env::set_var("RUST_LOG", "info") }
+        env_logger::init();
+        
+        // create a channel returns a tuple of sender `tx` and receiver `rx`
+        let (orders_tx, orders_rx) = channel::unbounded();
+        // cloning a sender means multiple threads can send into the channel
+        let orders_rx2 = orders_rx.clone();
+        let (lunches_tx, lunches_rx) = channel::unbounded();
+        // cloning a receiver means multiple threads can receive from the channel
+        let lunches_tx2 = lunches_tx.clone();
+
+        // the child threads get cafeteria workers
+        let alice_handle = thread::spawn(|| cafeteria_worker("alice", orders_rx2, lunches_tx2));
+        let zack_handle = thread::spawn(|| cafeteria_worker("zack", orders_rx, lunches_tx));
+
+        for order in vec!["polish dog", "caesar salad", "onion soup", "reuben sandwhich"] {
+            info!("ORDER: {}", order);
+            let _ = orders_tx.send(order);
+        }
+        // dropping the sending side will close the channel once all orders are received
+        // this in turn will also close the order for-loop inside the worker thread
+        drop(orders_tx);
+
+        // now we need to receive all prepared lunches back from the kitchen
+        for lunch in lunches_rx {
+            info!("Order up! -> {:?}", lunch);
+        }
+
+        // the main thread cleanly joins and terminates all child threads
+        let _ = alice_handle.join();
+        let _ = zack_handle.join();
+    }
+    ```
+* run this code online at the [Rust playground](https://play.rust-lang.org/?version=stable&mode=debug&edition=2021)
+    ```
+    [2024-07-04T10:34:38Z INFO  playground] ORDER: polish dog
+    [2024-07-04T10:34:38Z INFO  playground] ORDER: caesar salad
+    [2024-07-04T10:34:38Z INFO  playground] ORDER: onion soup
+    [2024-07-04T10:34:38Z INFO  playground] ORDER: reuben sandwhich
+    [2024-07-04T10:34:38Z INFO  playground] zack receives an order for polish dog
+    [2024-07-04T10:34:38Z INFO  playground] alice receives an order for caesar salad
+    [2024-07-04T10:34:39Z INFO  playground] zack sends a HotDog
+    [2024-07-04T10:34:39Z INFO  playground] Order up! -> HotDog
+    [2024-07-04T10:34:39Z INFO  playground] zack receives an order for onion soup
+    [2024-07-04T10:34:40Z INFO  playground] alice sends a Salad
+    [2024-07-04T10:34:40Z INFO  playground] alice receives an order for reuben sandwhich
+    [2024-07-04T10:34:40Z INFO  playground] Order up! -> Salad
+    [2024-07-04T10:34:41Z INFO  playground] zack sends a Soup
+    [2024-07-04T10:34:41Z INFO  playground] Order up! -> Soup
+    [2024-07-04T10:34:41Z INFO  playground] alice sends a Sandwich
+    [2024-07-04T10:34:41Z INFO  playground] Order up! -> Sandwich
+    ```
+    * the output illustrates that all come in at once from the main thread and in the orders queue
+    * the orders queue has one sender and two receiver ends, which are passed to the worker threads Alice and Zack
+    * the worker threads Alice and Zack each have a sender end for the lunch queue to which they can send out prepared lunches
+    * the lunch receiver end is on the main thread and whenever a lunch is received customers are informed to collect
 
 # 3. Game Prototype with Rusty Engine
 
