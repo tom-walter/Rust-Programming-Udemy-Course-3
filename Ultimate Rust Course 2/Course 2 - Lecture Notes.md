@@ -1186,21 +1186,3 @@ println!("{:#?}", puzzle); // Pretty Debug
     * the orders queue has one sender and two receiver ends, which are passed to the worker threads Alice and Zack
     * the worker threads Alice and Zack each have a sender end for the lunch queue to which they can send out prepared lunches
     * the lunch receiver end is on the main thread and whenever a lunch is received customers are informed to collect
-
-# 3. Game Prototype with Rusty Engine
-
-## 1. Project Overview
-## 2. Configuration
-## 3. Engine Initialization
-## 4. Game State
-## 5. Game Logic Function
-## 6. Sprites
-## 7. Coliders
-## 8. Keyboard Input
-## 9. Mouse Input
-## 10. Text
-## 11. Audio
-## 12. Timer
-## 13. Engine & Game Structs
-## 14. Common Setup
-## 15. Road Race
