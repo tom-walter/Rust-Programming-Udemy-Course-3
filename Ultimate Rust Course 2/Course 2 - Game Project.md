@@ -68,9 +68,20 @@
     * detect collisions between sprintes
     * be displayed on screen `engine.show_colliders = true`
 
-
 ## 8. Keyboard Input
+* for games to be interactive, it needs to process user input
+* `rusty_engine` simplifies handling keyboard and mouse input
+* there are keyboard states and keyboard events
+* keyboard events will handle multiple inputs (like typing in a player's name)
+    * we'll not use it in this tutorial
+* the keyboard state is a snapshot of which keys are pressed at the beginning of each frame
+    * this best for interactive things like character movements
+* the keycode is an enum with all possible keys on a keyboard 
+    * this comes from the bevy engine
+
 ## 9. Mouse Input
+* there are mouse states and mouse events
+
 ## 10. Text
 ## 11. Audio
 ## 12. Timer
