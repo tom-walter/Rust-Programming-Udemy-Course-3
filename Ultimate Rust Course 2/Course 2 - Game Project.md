@@ -106,6 +106,21 @@
     ```
 
 ## 11. Audio
+* `rusty_engine` has support for one looping audio-track like a background music
+* but you can play a few concurrent sound-effects (at least 12, but it can depend on the hardware)
+* there are some tracks and sounds included in the asset directory
+* supported audio formats are `ogg`, `mp3`, `flac`, `wav`
+* audio is accessed through the audio manager inside the game engine `game.audio_manager`
+* the method `.play_music()` plays looping music, it takes parameters:
+    * MusicPreset or music file path
+    * float between 0.0 and 1.0 for volume
+* sound effects are played in a "fire and forget" manner
+    * each on a different channel in available
+    * they terminate when the reach their end
+* the method `.play_sfx()` takes parameters:
+    * SfxPreset or file path
+    * float between 0.0 and 1.0 for volume
+
 ## 12. Timer
 ## 13. Engine & Game Structs
 ## 14. Common Setup

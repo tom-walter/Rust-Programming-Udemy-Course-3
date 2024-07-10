@@ -40,6 +40,7 @@ fn game_logic(engine: &mut Engine, game_state: &mut GameState) {
                 let high_score = engine.texts.get_mut("high_score").unwrap();
                 high_score.value = format!("High Score: {}", game_state.high_score);
             }
+            engine.audio_manager.play_sfx(SfxPreset::Minimize2, 0.3);
         }
     }
 
@@ -92,6 +93,8 @@ fn game_logic(engine: &mut Engine, game_state: &mut GameState) {
 
 fn main() {
     let mut game = Game::new();
+
+    game.audio_manager.play_music(MusicPreset::Classy8Bit, 0.75);
 
     let player = game.add_sprite("player", SpritePreset::RacingCarBlue);
     player.translation = Vec2::new(30.0, 30.0);
