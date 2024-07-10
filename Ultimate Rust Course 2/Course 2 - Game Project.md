@@ -122,6 +122,25 @@
     * float between 0.0 and 1.0 for volume
 
 ## 12. Timer
+* `rusty_engine` re-exports bevy's timer struct
+* timers are cheap performance-wise
+* create them with 
+    ```rust
+    Timer::from_seconds(2.0, false);
+    ```
+    * the number of seconds to count down
+    * and a boolean for whether the timer is repeating
+* timers are updated by the method `.tick()`
+* if you don't tick a timer it is effectively paused
+* tick returns an immutable reference to the timer
+* together with what we learned so far, we can now spawn obejcts with a timer on the screen
+* add `rand` to Cargo.toml for generating random positions
+    ```toml
+    [dependencies]
+    rand = "0.8"
+    ```
+* now we have the essential pieces to build a small game
+
 ## 13. Engine & Game Structs
 ## 14. Common Setup
 ## 15. Road Race
