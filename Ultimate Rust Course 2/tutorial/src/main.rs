@@ -29,9 +29,17 @@ fn game_logic(engine: &mut Engine, game_state: &mut GameState) {
                     engine.sprites.remove(&label);
                 }
             }
-
+            
+            // for every yellow car we collect a point
             game_state.current_score += 1;
-            println!("Current Score: {}", game_state.current_score);
+            let score = engine.texts.get_mut("score").unwrap();
+            score.value = format!("Current Score: {}", game_state.current_score);
+
+            if game_state.current_score > game_state.high_score {
+                game_state.high_score = game_state.current_score;
+                let high_score = engine.texts.get_mut("high_score").unwrap();
+                high_score.value = format!("High Score: {}", game_state.high_score);
+            }
         }
     }
 
@@ -73,6 +81,13 @@ fn game_logic(engine: &mut Engine, game_state: &mut GameState) {
             car1.collision = true;
         }
     }
+
+    // reset score
+    if engine.keyboard_state.just_pressed(KeyCode::R) {
+        game_state.current_score = 0;
+        let score = engine.texts.get_mut("score").unwrap();
+        score.value = "Score: 0".to_string();
+    }
 }
 
 fn main() {
@@ -84,6 +99,12 @@ fn main() {
     player.scale = 1.0;
     player.layer = 0.0;
     player.collision = true;
+
+    let score = game.add_text("score", "Current Score: 0");
+    score.translation = Vec2::new(520.0, 320.0);
+
+    let high_score = game.add_text("high_score", "High Score: 0");
+    high_score.translation = Vec2::new(-520.0, 320.0);
 
     game.add_logic(game_logic);
     game.run(GameState::default());

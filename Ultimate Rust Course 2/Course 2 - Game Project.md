@@ -81,8 +81,30 @@
 
 ## 9. Mouse Input
 * there are mouse states and mouse events
+* the mouse state also provides the mouse location, meaning that if the player clicks on the screen we can directly create an interaction
 
 ## 10. Text
+* in `rusty_engine` text handes very similar to sprites
+* text has a 
+    * position (translation)
+    * scale 
+    * rotation
+* additionally, text has a font-type and font-size
+* NOTE: changing font-size is expensive but changing scale is cheap, so use the sprite-style attributes
+* inside the main function, we can add text just like we added sprites
+    ```rust
+    let score = game.add_text("score", "Current Score: 0");
+    score.translation = Vec2::new(520.0, 320.0);
+
+    let high_score = game.add_text("high_score", "High Score: 0");
+    high_score.translation = Vec2::new(-520.0, 320.0);
+    ```
+* then in the game logic, we can access these text objects through the engine 
+    ```rust
+    let score = engine.texts.get_mut("score").unwrap();
+    score.value = format!("Current Score: {}", game_state.current_score);
+    ```
+
 ## 11. Audio
 ## 12. Timer
 ## 13. Engine & Game Structs
