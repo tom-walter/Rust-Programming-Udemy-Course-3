@@ -142,5 +142,21 @@
 * now we have the essential pieces to build a small game
 
 ## 13. Engine & Game Structs
+* let's learn some more vital information about the engine and game structs
+* the `enine` parameter passed to the game_logic is a mutable reference to an Engine struct
+* the engine already cleanly exits if you hit `ESC` or the press the close button no the window
+* but we can also a quit function with `engine.should_exit = true;` 
+* so far we have relied on absolute positions of our sprites and texts, but if you resize the window they may disappear
+* let's make the relative to the screen size
+* another usefule thing is the `time_since_startup_f64`
+    * a value that tracks how long the game has been running
+    * this can be usef for periodic animations like oscilations or circles
+* we can use this to make our score-text hover up and down
+* there are also more options to configure the `window_settings`
+* this tales a `WindowDescriptor` struct with
+    * a title, a width, and a height
+    * the rest can be set to default
+
+
 ## 14. Common Setup
 ## 15. Road Race

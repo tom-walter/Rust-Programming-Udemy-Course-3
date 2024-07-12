@@ -21,6 +21,21 @@ impl Default for GameState{
 
 
 fn game_logic(engine: &mut Engine, game_state: &mut GameState) {
+    // quiting with Q 
+    if engine.keyboard_state.just_pressed(KeyCode::Q) {
+        engine.should_exit = true;
+    }
+
+    // keep text near the edges of the screen
+    let offset = ((engine.time_since_startup_f64 * 3.0).cos() * 5.0) as f32;
+
+    let score = engine.texts.get_mut("score").unwrap();
+    score.translation.x = engine.window_dimensions.x / 2.0 - 120.0;
+    score.translation.y = engine.window_dimensions.y / 2.0 - 30.0 + offset;
+    let high_score = engine.texts.get_mut("high_score").unwrap();
+    high_score.translation.x = -engine.window_dimensions.x / 2.0 + 110.0;
+    high_score.translation.y = engine.window_dimensions.y / 2.0 - 30.0;
+
     // handle collisions
     for event in engine.collision_events.drain(..) {
         if event.state == CollisionState::Begin && event.pair.one_starts_with("player") {
@@ -103,6 +118,11 @@ fn game_logic(engine: &mut Engine, game_state: &mut GameState) {
 fn main() {
     let mut game = Game::new();
 
+    game.window_settings(WindowDescriptor {
+        title: "Tutorial".to_string(),
+        ..Default::default()
+    });
+
     game.audio_manager.play_music(MusicPreset::Classy8Bit, 0.75);
 
     let player = game.add_sprite("player", SpritePreset::RacingCarBlue);
@@ -113,7 +133,7 @@ fn main() {
     player.collision = true;
 
     let score = game.add_text("score", "Current Score: 0");
-    score.translation = Vec2::new(520.0, 320.0);
+    score.translation = Vec2::new(500.0, 320.0);
 
     let high_score = game.add_text("high_score", "High Score: 0");
     high_score.translation = Vec2::new(-520.0, 320.0);
