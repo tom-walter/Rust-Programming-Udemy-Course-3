@@ -157,6 +157,31 @@
     * a title, a width, and a height
     * the rest can be set to default
 
-
 ## 14. Common Setup
+* every game scenario in `rusty_engine` goes through the same setup
+* this setup can be found [here](https://github.com/CleanCut/rusty_engine/tree/main/scenarios#common-setup-do-this-first)
+    1. create a new Rust project
+    2. add ´rusty_engine´ to Cargo.toml
+    3. download asset pack
+    4. copy the skeleton logic
+    5. then compile in release mode
+* the basic setup needs some time to compile but only needs to be compiled once (it's done when a gray window opens)
+
 ## 15. Road Race
+* we'll build the road race game ([repo tutorial](https://github.com/CleanCut/rusty_engine/blob/main/scenarios/road_race.md))
+* in the game state, implement player health
+* in the game loop, add a player sprite
+* in the game logic, take player's keyboard input and translate into movements
+    * let's make it so the car also looks like it's turning
+    * going off the road leads to losing the game
+* we also want to the car/road to appear moving
+    * they should move from right to left
+    * and re-appear again
+* for a challenge, we want obstacles to appear at random
+    * we need to the `rand` crate
+    * obstable sprites are in the assets
+* obstacles need to have a collision event with the player
+    * any other collisions can be skipped
+    * there should be a sound on collision and health should drop
+* when the player runs out of health, it's game over
+    * display a game over messages
